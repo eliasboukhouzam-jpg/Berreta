@@ -13,7 +13,7 @@ const radius = (h) => {
 const segment = (from, to, mat, n = 18) => latheX([[0, from], ...sample(radius, from, to, n), [0, to]], mat);
 
 export function buildShahed() {
-  const m = new ExplodedModel('shahed', { scale: 0.95, offset: [0.05, 0, 0] });
+  const m = new ExplodedModel('shahed', { scale: 0.8, offset: [0.05, 0, 0] });
   const skin = M.composite();
 
   // Delta wing planform (x forward, y = span), extruded thin then laid flat
@@ -37,7 +37,7 @@ export function buildShahed() {
     labelOffset: [-0.4, 0.05, 0.75],
   });
 
-  m.add('warhead', group(segment(0.95, 1.6, M.compositeDark())), { explode: [1.05, 0, 0], labelOffset: [0.1, 0.28, 0] });
+  m.add('warhead', group(segment(0.95, 1.6, M.compositeDark())), { explode: [0.9, 0, 0], labelOffset: [0.1, 0.28, 0] });
 
   m.add(
     'guidance',
@@ -46,11 +46,11 @@ export function buildShahed() {
       cyl(0.09, 0.09, 0.025, M.plastic(), [0.76, 0.205, 0]),
       box(0.18, 0.02, 0.12, M.pcb(), [0.74, 0.22, 0]),
     ),
-    { explode: [0.45, 0.8, 0], labelOffset: [0, 0.25, 0] },
+    { explode: [0.4, 0.7, 0], labelOffset: [0, 0.25, 0] },
   );
 
   m.add('tank', group(cyl(0.16, 0.16, 0.9, M.aluminium(), [-0.05, 0, 0], [0, 0, Math.PI / 2])), {
-    explode: [0, -0.9, 0],
+    explode: [0, -0.8, 0],
     labelOffset: [0, -0.24, 0],
   });
 
@@ -58,7 +58,7 @@ export function buildShahed() {
     const f = box(0.32, 0.4, 0.025, M.compositeDark(), [-1.26, 0.06, s * 1.25], [0, 0, 0.28]);
     return f;
   });
-  m.add('fins', group(fins), { explode: [0, 0.28, 0], spread: 0.25, labelOffset: [0, 0.32, -1.3] });
+  m.add('fins', group(fins), { explode: [0, 0.26, 0], spread: 0.2, labelOffset: [0, 0.32, -1.3] });
 
   m.add(
     'engine',
@@ -68,7 +68,7 @@ export function buildShahed() {
       ...[0.13, -0.13].map((z) => box(0.08, 0.08, 0.1, M.aluminium(), [-1.3, 0, z])),
       cyl(0.02, 0.02, 0.2, M.steel(), [-1.5, 0, 0], [0, 0, Math.PI / 2], 12),
     ),
-    { explode: [-0.8, 0.4, 0], labelOffset: [0, 0.22, 0] },
+    { explode: [-0.62, 0.35, 0], labelOffset: [0, 0.22, 0] },
   );
 
   m.add(
@@ -77,7 +77,7 @@ export function buildShahed() {
       box(0.03, 0.66, 0.07, M.plastic(), [-1.6, 0, 0], [0.35, 0, 0]),
       cyl(0.0, 0.05, 0.08, M.plastic(), [-1.66, 0, 0], [0, 0, Math.PI / 2], 16),
     ),
-    { explode: [-1.45, 0.2, 0], labelOffset: [0, 0.4, 0] },
+    { explode: [-1.1, 0.2, 0], labelOffset: [0, 0.4, 0] },
   );
 
   return m;

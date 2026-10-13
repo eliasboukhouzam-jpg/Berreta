@@ -50,8 +50,9 @@ export class Stage {
     window.addEventListener('resize', () => this.resize());
     this.resize();
 
-    this.clock = new THREE.Clock();
-    this.renderer.setAnimationLoop(() => this.frame());
+    this.timer = new THREE.Timer();
+    this.timer.connect(document);
+    this.renderer.setAnimationLoop((time) => this.frame(time));
   }
 
   register(model, partsInfo = {}) {
@@ -97,12 +98,13 @@ export class Stage {
     const mobile = w < 820 || this.camera.aspect < 0.9;
     this.layout = mobile
       ? { x: 0, y: halfH * 0.3, scale: Math.min(1, (halfW * 2) / 4.4), mobile }
-      : { x: halfW * 0.3, y: 0, scale: Math.min(1, halfW / 3.6), mobile };
+      : { x: halfW * 0.34, y: -0.05, scale: Math.min(1, halfW / 3.9), mobile };
   }
 
-  frame() {
-    const dt = Math.min(this.clock.getDelta(), 0.05);
-    const t = this.clock.elapsedTime;
+  frame(time) {
+    this.timer.update(time);
+    const dt = Math.min(this.timer.getDelta(), 0.05);
+    const t = this.timer.getElapsed();
     const T = this.target;
     const C = this.cur;
     const L = this.reduced ? 40 : 4.5;
@@ -116,10 +118,14 @@ export class Stage {
     this.pointer.sx = damp(this.pointer.sx, this.reduced ? 0 : this.pointer.x, 3, dt);
     this.pointer.sy = damp(this.pointer.sy, this.reduced ? 0 : this.pointer.y, 3, dt);
 
+    // Sequential cross-fade: the incoming model waits until the outgoing one is nearly gone.
+    let outgoing = 0;
+    for (const [id, m] of this.models) if (id !== this.active) outgoing = Math.max(outgoing, m.presence);
+
     let anyVisible = false;
     for (const [id, m] of this.models) {
-      const want = id === this.active ? 1 : 0;
-      m.presence = damp(m.presence, want, 4, dt);
+      const want = id === this.active && outgoing < 0.15 ? 1 : 0;
+      m.presence = damp(m.presence, want, want ? 4 : 7, dt);
       if (want === 0 && m.presence < 0.005) {
         m.presence = 0;
         m.pivot.visible = false;

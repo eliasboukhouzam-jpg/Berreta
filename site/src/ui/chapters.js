@@ -78,18 +78,27 @@ function stateAt(steps, p) {
 export function bindChapters(stage, onChapter) {
   chapters.forEach((ch) => {
     const el = document.getElementById(`ch-${ch.id}`);
+    // Presence: the model is on stage a little before the first card and until
+    // just after the last one, so it never blinks out at the exact edges.
     ScrollTrigger.create({
       trigger: el,
-      start: 'top top',
-      end: 'bottom bottom',
+      start: 'top 75%',
+      end: 'bottom 25%',
       onToggle: (self) => {
         if (self.isActive) {
           stage.setActive(ch.model);
+          stage.setTarget(stateAt(ch.steps, self.direction > 0 ? 0 : 1));
           onChapter?.(ch);
         } else if (stage.active === ch.model) {
           stage.setActive(null);
         }
       },
+    });
+    // Story: card k centred on screen ↔ step k state.
+    ScrollTrigger.create({
+      trigger: el,
+      start: 'top top',
+      end: 'bottom bottom',
       onUpdate: (self) => stage.setTarget(stateAt(ch.steps, self.progress)),
     });
     el.querySelectorAll('.card').forEach((card) => {

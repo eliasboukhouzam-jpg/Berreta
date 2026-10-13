@@ -286,15 +286,12 @@ main,
   color: var(--paper);
 }
 
-.rule .strike {
-  position: absolute;
-  left: -2%;
-  right: -2%;
-  top: 54%;
-  height: 2px;
-  background: var(--copper);
-  transform: scaleX(0);
-  transform-origin: left;
+/* Strike-through that runs across every wrapped line in reading order */
+.rule-text {
+  background-image: linear-gradient(var(--copper), var(--copper));
+  background-repeat: no-repeat;
+  background-position: 0 56%;
+  background-size: 0% 2px;
 }
 
 .plate h3 {

@@ -9,7 +9,7 @@ const ogive = (h) => 0.11 + 0.19 * Math.sqrt(Math.max(0, 1 - ((h - 1.35) / 0.9) 
 const inner = (h) => ogive(h) - 0.045;
 
 export function buildShell() {
-  const m = new ExplodedModel('shell', { scale: 0.92, offset: [-0.55, 0, 0] });
+  const m = new ExplodedModel('shell', { scale: 0.8, offset: [-0.55, 0, 0] });
   const CUT = Math.PI * 1.5;
 
   const outerProfile = [
@@ -103,8 +103,8 @@ export function buildShell() {
       cyl(0.285, 0.285, 0.04, M.darkSteel(), [x - 0.23, 0, 0], [0, 0, Math.PI / 2], 40),
     );
   m.add('charges', group(charge(-0.42), charge(-0.96)), {
-    explode: [-0.75, 0, 0],
-    spread: 0.35,
+    explode: [-0.6, 0, 0],
+    spread: 0.3,
     labelOffset: [0, 0.42, 0],
   });
 

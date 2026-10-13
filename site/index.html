@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Berreta: weapons and what they are made of</title>
+    <meta name="description" content="A scroll story through the revolutions in weaponry, then the drone decade (2014–2026) taken apart piece by piece, down to the minerals." />
+    <meta name="theme-color" content="#0b0b0c" />
+  </head>
+  <body>
+    <canvas id="stage" aria-hidden="true"></canvas>
+    <div id="labels" aria-hidden="true"></div>
+    <div class="vignette" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <a class="wordmark" href="#hero">BERRETA</a>
+      <span id="section-label" class="section-label">Introduction</span>
+      <span class="draft-tag">Draft v0.1</span>
+      <i id="progress" class="progress" aria-hidden="true"></i>
+    </header>
+
+    <main>
+      <section id="hero" class="hero">
+        <div class="hero-inner">
+          <span class="kicker">From the first sharp stone to the drone decade</span>
+          <h1>Every weapon is a supply chain <em>with a trigger.</em></h1>
+          <p class="lede">Twelve revolutions that changed war, told briefly. Then the weapons of 2014–2026, taken apart piece by piece, down to the rocks they are made of.</p>
+          <span class="scroll-cue">Scroll</span>
+        </div>
+      </section>
+
+      <section id="past" class="past" aria-label="Part I: twelve rules that broke"></section>
+
+      <section id="landing" class="landing">
+        <div class="landing-inner">
+          <span class="kicker">Part II · 2014 → 2026</span>
+          <h2 class="landing-year">2014.</h2>
+          <p class="lede">Then everything got cheap. Precision stopped belonging to superpowers, and the most important weapons of the decade started life as hobby kits, factory parts and mined rock.</p>
+        </div>
+      </section>
+
+      <div id="chapters"></div>
+
+      <section id="next" class="next"></section>
+    </main>
+
+    <footer class="footer">
+      <div class="legend">
+        <span><span class="ev ev-doc"></span> Documented</span>
+        <span><span class="ev ev-con"></span> Consensus</span>
+        <span><span class="ev ev-est"></span> Estimate, to verify</span>
+      </div>
+      <p>Draft v0.1. 3D models are simplified placeholders built in code, not drawings of real systems. Every figure is tagged by evidence level and sourced in <code>research/</code>. This site explains materials, industry and consequences. It never gives instructions for making weapons.</p>
+    </footer>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

@@ -13,6 +13,7 @@ Brainstorm drafted 13 Oct 2026. This folder is the **content source of truth** f
 | [07-value-chain-model.md](07-value-chain-model.md) | **The end product:** 10-layer value chain (mine → country → tonnage → processing → refinery → factory → logistics → politics → contracts → end of life), evidence levels L1–L4, node/edge data model |
 | [08-value-chain-sig-m17.md](08-value-chain-sig-m17.md) | Worked chain for the SIG Sauer M17 (the pistol that replaced the Beretta M9) |
 | [09-chain-structure.md](09-chain-structure.md) | **How the story is told:** 12 old revolutions as "rules that broke" (brief), 6 scale dials, 7 deep shifts for 2014–2026, ancestor pairs |
+| [10-inspiration-and-visual-models.md](10-inspiration-and-visual-models.md) | Lessons from Anduril, Beretta, Helsing & newsrooms; story patterns; visual system (line art past, 3D present, exploded view → value chain); asset licensing |
 
 **Confidence legend everywhere:** ✅ documented · 🟡 consensus (default when untagged) · ⚠️ estimate/contested, verify before publishing.
 

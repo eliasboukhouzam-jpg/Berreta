@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Model check</title>
+    <style>
+      html, body { margin: 0; background: #d9d6cf; }
+      canvas { display: block; }
+    </style>
+  </head>
+  <body>
+    <script type="module">
+      import * as THREE from 'three';
+      import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+      import { buildBeretta92 } from './src/models/beretta92.js';
+      import { buildGlock17 } from './src/models/glock17.js';
+      import { buildM16 } from './src/models/m16a2.js';
+      import { buildBarrett } from './src/models/barrett.js';
+      import { buildFpv } from './src/models/fpv.js';
+
+      const params = new URLSearchParams(location.search);
+      const explode = Number(params.get('explode') || 0);
+      const rotY = Number(params.get('rot') || 0);
+      const rotX = Number(params.get('tilt') || 0);
+      const only = params.get('only');
+
+      const W = innerWidth, H = innerHeight;
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(W, H);
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      document.body.appendChild(renderer.domElement);
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0xd9d6cf);
+      scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+      const key = new THREE.DirectionalLight(0xffffff, 2);
+      key.position.set(3, 5, 6);
+      scene.add(key, new THREE.HemisphereLight(0xffffff, 0x444444, 0.6));
+
+      const builders = { beretta: buildBeretta92, glock: buildGlock17, m16: buildM16, barrett: buildBarrett, fpv: buildFpv };
+      const ids = only ? [only] : Object.keys(builders);
+      const cols = only ? 1 : 2;
+      const rows = Math.ceil(ids.length / cols);
+      const cam = new THREE.OrthographicCamera(-cols * 1.6, cols * 1.6, rows * 1.6 * (H / W) * (cols * 1.6) / (rows * 1.6) , -rows * 1.6, 0.1, 100);
+      const aspect = W / H;
+      const halfH = rows * 1.7;
+      const halfW = Math.max(cols * 1.8, halfH * aspect);
+      cam.left = -halfW; cam.right = halfW; cam.top = halfW / aspect; cam.bottom = -halfW / aspect;
+      cam.updateProjectionMatrix();
+      cam.position.set(0, 0, 20);
+
+      ids.forEach((id, i) => {
+        const m = builders[id]();
+        const pivot = new THREE.Group();
+        pivot.add(m.root);
+        pivot.scale.setScalar(m.baseScale);
+        pivot.rotation.set(rotX, rotY, 0);
+        const c = i % cols, r = Math.floor(i / cols);
+        pivot.position.set((c - (cols - 1) / 2) * 3.4, ((rows - 1) / 2 - r) * 3.0, 0);
+        m.apply({ explode, focus: null, dim: 0, labels: 0, dt: 1, mobile: false });
+        scene.add(pivot);
+      });
+      renderer.render(scene, cam);
+      window.__done = true;
+    </script>
+  </body>
+</html>

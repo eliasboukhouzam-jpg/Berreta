@@ -1,6 +1,8 @@
-# Berreta site: draft v0.1
+# Berreta site: draft v0.2
 
-Scroll-driven 3D story. **Part I** shows the 12 revolutions briefly, as line-art plates that draw themselves while scale dials move. **Part II** (2014–2026) takes each object apart in 3D, one part at a time, as you scroll.
+Pick a weapon the way you pick a flavour: each one has its own colour world, and switching runs a molten dissolve on the 3D model, a gooey colour wipe and a letter roll. Scroll down and the weapon comes apart. Each part shows its material and the elements in it. Then one material leaves the gun: the globe shows who mines it, the biggest mines and their owners, who refines it, and one plausible path from mine to factory.
+
+Five weapons: Beretta 92FS, Glock 17, M16A2, Barrett M82A1, FPV strike drone.
 
 ## Run
 
@@ -11,27 +13,33 @@ npm run dev      # local dev server
 npm run build    # static build in site/dist
 ```
 
+`dev-models.html` renders all five models side by side (query: `explode`, `rot`, `tilt`, `only`) for checking silhouettes.
+
 ## Structure
 
 | Path | What |
 |---|---|
-| `src/content/revolutions.js` | Part I text + dial values (one entry per revolution) |
-| `src/content/chapters.js` | Part II chapters: steps (text + 3D state), part labels, timelines |
-| `src/art/plates.js` | Placeholder line art for the 12 plates (to be replaced by commissioned drawings) |
-| `src/three/stage.js` | Single fixed WebGL canvas, lights, labels, easing toward the scroll state |
-| `src/three/exploded.js` | `ExplodedModel`: named parts, explode vectors, focus/dim, labels |
-| `src/models/*.js` | Procedural placeholder models: rock (hero), FPV drone, Shahed-type drone, 155 mm shell (cut-away) |
-| `src/ui/past.js` | Part I pinned timeline (GSAP ScrollTrigger) |
-| `src/ui/chapters.js` | Part II scroll → 3D state mapping |
+| `src/data/weapons.js` | The five weapons: copy, colour world, parts (each with an alloy and a key element), the journey of one material |
+| `src/data/alloys.js` | Alloys and polymers with their element recipes |
+| `src/data/elements.js` | Per element: mining and refining tables, biggest mines with owners, refining sites |
+| `src/models/*.js` | Procedural exterior models drawn from side profiles in millimetres |
+| `src/three/profile.js` | Profile extrusion, lathe, spring and serration helpers (1 unit = 100 mm) |
+| `src/three/materials.js` | Finishes: bruniton, nitride, anodised, stippled polymer, glass, copper… |
+| `src/three/exploded.js` | `ExplodedModel`: named parts, explode vectors, focus/dim, labels, dissolve |
+| `src/three/dissolve.js` | Noise dissolve shader used when switching weapons |
+| `src/three/globe.js` | Dotted globe: choropleth by share, mine pillars, refining sites, journey arcs |
+| `src/three/stage.js` | One fixed WebGL canvas; scroll sets a target state, the stage eases toward it |
+| `src/ui/selector.js` | Weapon picker and the switch transition |
+| `src/ui/story.js` | Scroll story built per weapon: take apart → parts → globe → back together |
 
-## Adding a chapter
+## Adding a weapon
 
 1. Build a model in `src/models/` with `new ExplodedModel(id)` and `.add(partId, object, { explode: [x, y, z] })`.
-2. Register it in `src/main.js`.
-3. Add a chapter in `src/content/chapters.js` with `parts` (labels) and `steps` (each step: `state` + text).
+2. Add it to `src/data/weapons.js` (parts must use the same ids) and register it in `src/main.js`.
+3. Any new alloy goes in `alloys.js`; any new element in `elements.js`.
 
-Step state fields: `explode` (0–1), `rotY`, `rotX`, `zoom`, `focus` (part id), `show` (optional part ids), `labels` (bool).
+## Limits on purpose
 
-## Status
-
-Draft. Models are simplified shapes built in code, not drawings of real systems. Text carries evidence badges (documented / consensus / estimate). Sources are in `../research/`.
+- Models are exteriors only, split at field-strip level (what an owner's manual shows). No internal mechanisms, no dimensions on screen, no files that could be used for manufacturing.
+- Journeys are one plausible path. Metals from many mines are mixed at refineries, so no weapon can be traced to a single mine.
+- Figures carry evidence badges (documented / consensus / estimate). Sources are in `../research/`. Not affiliated with any manufacturer.

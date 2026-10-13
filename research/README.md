@@ -10,6 +10,8 @@ Brainstorm drafted 13 Oct 2026. This folder is the **content source of truth** f
 | [04-sample-entries.md](04-sample-entries.md) | The entry template (YAML) + 3 full deep dives: Naue II bronze sword, Beretta 1526 arquebus barrels, 155 mm shell 2026 |
 | [05-storylines.md](05-storylines.md) | 11 cross-era narrative threads (Saltpeter, Tin routes, Chokepoints, Who paid…) |
 | [06-sources.md](06-sources.md) | Source tiers, core library, the web sources used today, hygiene rules |
+| [07-value-chain-model.md](07-value-chain-model.md) | **The end product:** 10-layer value chain (mine → country → tonnage → processing → refinery → factory → logistics → politics → contracts → end of life), evidence levels L1–L4, node/edge data model |
+| [08-value-chain-sig-m17.md](08-value-chain-sig-m17.md) | Worked chain for the SIG Sauer M17 (the pistol that replaced the Beretta M9) |
 
 **Confidence legend everywhere:** ✅ documented · 🟡 consensus (default when untagged) · ⚠️ estimate/contested, verify before publishing.
 

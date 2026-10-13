@@ -40,6 +40,8 @@ We document **weapon families / breakthroughs**, meaning the moment a technology
 
 The master list in `02-master-timeline.md` has about 200 breakthroughs. That's a realistic v1. If we shipped model-level pages we would never finish.
 
+> **Update (13 Oct 2026):** the end product is a full **value chain** per weapon (mines, countries, tonnage, processing, refineries, logistics, politics, contracts). See `07-value-chain-model.md`. The axes below are how readers *enter* that chain.
+
 ## 4. The four ways in (navigation axes)
 
 Content gets written once and is reachable four ways. That decides the data model, so it has to be settled before design.

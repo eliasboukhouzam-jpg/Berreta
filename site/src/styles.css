@@ -112,7 +112,7 @@ main,
   display: flex;
   align-items: center;
   gap: 24px;
-  padding: 18px var(--gutter);
+  padding: calc(18px + env(safe-area-inset-top, 0px)) var(--gutter) 18px;
   font: 500 11px/1 var(--mono);
   letter-spacing: 0.14em;
   text-transform: uppercase;

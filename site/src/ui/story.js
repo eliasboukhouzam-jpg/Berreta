@@ -61,7 +61,7 @@ export function buildSteps(w) {
     label: 'Take it apart',
     state: { explode: 1, labels: true, rotY: 0.45, rotX: 0.3, zoom: 0.98 },
     html: `<span class="kicker">${w.name}</span><h3>${parts.length} parts. ${nMaterials} materials.</h3>
-      <p>Taken apart the way its owner’s manual shows. Keep scrolling: each part goes back to the ground it came from.</p>`,
+      <p>Taken apart the way its owner’s manual shows. Drag it to turn it. Keep scrolling: each part goes back to the ground it came from.</p>`,
   });
 
   parts.forEach((p, i) => {

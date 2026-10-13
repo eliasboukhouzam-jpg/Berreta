@@ -123,7 +123,8 @@ export function createSelector({ weapons, stage, reduced, onChange }) {
   });
   let touchX = null;
   const hero = document.getElementById('hero');
-  hero.addEventListener('touchstart', (e) => (touchX = e.touches[0].clientX), { passive: true });
+  // a swipe that starts on the weapon turns it (see Stage.bindDrag) instead of switching
+  hero.addEventListener('touchstart', (e) => (touchX = stage.dragging ? null : e.touches[0].clientX), { passive: true });
   hero.addEventListener('touchend', (e) => {
     if (touchX === null) return;
     const dx = e.changedTouches[0].clientX - touchX;

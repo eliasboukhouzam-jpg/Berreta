@@ -339,9 +339,20 @@ main,
   padding: 90px var(--gutter);
 }
 
-/* the globe can be dragged; on touch only sideways, so vertical swipes keep scrolling */
-.step.is-globe {
+/* the weapon and the globe can be dragged; on touch only sideways, so vertical swipes keep scrolling */
+.hero,
+.step {
   touch-action: pan-y;
+}
+
+html.is-turnable body {
+  cursor: grab;
+}
+
+html.is-turning,
+html.is-turning body {
+  cursor: grabbing;
+  user-select: none;
 }
 
 #story.is-grab .step.is-globe {

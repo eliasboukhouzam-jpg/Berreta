@@ -68,9 +68,82 @@ export class Stage {
     window.addEventListener('resize', () => this.resize());
     this.resize();
 
+    this.vel = new THREE.Vector2(); // drag inertia in rad/s (x: tilt, y: turn)
+    this.dragging = false;
+    this.held = false; // a drag holds the pose (no idle sway or pointer parallax) until the next step
+    this.bindDrag();
+
     this.timer = new THREE.Timer();
     this.timer.connect(document);
     this.renderer.setAnimationLoop((time) => this.frame(time));
+  }
+
+  /** The active weapon's bounding rectangle on screen in CSS pixels, or null while it is hidden. */
+  gunRect() {
+    const m = this.models.get(this.active);
+    if (!m || this.cur.gun < 0.5 || this.globe.presence > 0.5) return null;
+    const box = new THREE.Box3().setFromObject(m.pivot);
+    const r = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+    const v = new THREE.Vector3();
+    for (let i = 0; i < 8; i++) {
+      v.set(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z).project(this.camera);
+      const x = ((v.x + 1) / 2) * window.innerWidth;
+      const y = ((1 - v.y) / 2) * window.innerHeight;
+      r.x0 = Math.min(r.x0, x);
+      r.x1 = Math.max(r.x1, x);
+      r.y0 = Math.min(r.y0, y);
+      r.y1 = Math.max(r.y1, y);
+    }
+    return r;
+  }
+
+  /**
+   * Drag the weapon to turn it. Mouse drags turn and tilt; touch drags only turn it sideways,
+   * so vertical swipes still scroll. The pose holds until the next scroll step.
+   */
+  bindDrag() {
+    const root = document.documentElement;
+    const skip = '.card, button, a, .picker, .topbar, .footer';
+    let drag = null;
+    const over = (e) => {
+      if (e.target.closest?.(skip)) return false;
+      const r = this.gunRect();
+      const pad = 16;
+      return Boolean(r) && e.clientX > r.x0 - pad && e.clientX < r.x1 + pad && e.clientY > r.y0 - pad && e.clientY < r.y1 + pad;
+    };
+    window.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0 || !over(e)) return;
+      if (e.pointerType === 'mouse') e.preventDefault();
+      drag = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now(), k: 3.4 / window.innerWidth, touch: e.pointerType !== 'mouse' };
+      this.dragging = true;
+      this.held = true;
+      this.vel.set(0, 0);
+      root.classList.add('is-turning');
+    });
+    window.addEventListener('pointermove', (e) => {
+      if (!drag) {
+        if (e.pointerType === 'mouse') root.classList.toggle('is-turnable', over(e));
+        return;
+      }
+      if (e.pointerId !== drag.id) return;
+      const now = performance.now();
+      const dt = Math.max(8, now - drag.t) / 1000;
+      const turn = (e.clientX - drag.x) * drag.k * Math.PI;
+      const tilt = drag.touch ? 0 : (e.clientY - drag.y) * drag.k * Math.PI;
+      this.target.rotY += turn;
+      this.target.rotX = THREE.MathUtils.clamp(this.target.rotX + tilt, -1.2, 1.2);
+      this.vel.lerp(new THREE.Vector2(tilt / dt, turn / dt), 0.5);
+      Object.assign(drag, { x: e.clientX, y: e.clientY, t: now });
+    });
+    const end = (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      if (performance.now() - drag.t > 80) this.vel.set(0, 0); // held still before letting go: no fling
+      drag = null;
+      this.dragging = false;
+      root.classList.remove('is-turning');
+    };
+    window.addEventListener('pointerup', end);
+    window.addEventListener('pointercancel', end);
   }
 
   register(model, parts = []) {
@@ -101,6 +174,7 @@ export class Stage {
   switchTo(id, world, { instant = false } = {}) {
     const next = this.models.get(id);
     const prev = this.models.get(this.active);
+    this.resetPose();
     this.rim.color.set(world.glow);
     this.globe.setPalette(world.accent, world.ink, world.bg);
     for (const m of this.models.values()) m.setEdgeColor(world.glow);
@@ -126,7 +200,19 @@ export class Stage {
   }
 
   setTarget(state) {
-    this.target = { ...DEFAULT_STATE, ...state };
+    this.pose = { ...DEFAULT_STATE, ...state };
+    this.target = { ...this.pose };
+    this.vel.set(0, 0);
+    this.held = this.dragging;
+  }
+
+  /** Drop any drag and return to the current step's own pose. */
+  resetPose() {
+    if (!this.pose) return;
+    this.target.rotY = this.pose.rotY;
+    this.target.rotX = this.pose.rotX;
+    this.vel.set(0, 0);
+    this.held = false;
   }
 
   resize() {
@@ -152,9 +238,17 @@ export class Stage {
     const C = this.cur;
     const L = this.reduced ? 40 : 4;
 
+    if (!this.dragging && this.vel.lengthSq() > 1e-6) {
+      T.rotY += this.vel.y * dt;
+      T.rotX = THREE.MathUtils.clamp(T.rotX + this.vel.x * dt, -1.2, 1.2);
+      this.vel.multiplyScalar(Math.exp(-3.5 * dt));
+    }
+    // follows a drag tightly, eases slowly toward a scroll step's pose
+    const follow = this.dragging ? 18 : L * 0.8;
     C.explode = damp(C.explode, T.explode, L, dt);
-    C.rotY = damp(C.rotY, T.rotY, L * 0.8, dt);
-    C.rotX = damp(C.rotX, T.rotX, L * 0.8, dt);
+    C.rotY = damp(C.rotY, T.rotY, follow, dt);
+    C.rotX = damp(C.rotX, T.rotX, follow, dt);
+    C.free = damp(C.free ?? 1, this.held ? 0 : 1, 4, dt);
     C.zoom = damp(C.zoom, T.zoom, L, dt);
     C.dim = damp(C.dim, T.focus ? 1 : 0, 6, dt);
     C.labels = damp(C.labels, T.labels ? 1 : 0, 6, dt);
@@ -169,8 +263,8 @@ export class Stage {
       const on = id === this.active && C.gun > 0.01;
       m.pivot.visible = on;
       if (!on) continue;
-      const sway = this.reduced ? 0 : Math.sin(t * 0.45) * 0.22 * C.hero;
-      m.pivot.rotation.set(C.rotX + this.pointer.sy * 0.06, C.rotY + sway + this.spinKick + this.pointer.sx * 0.18, 0);
+      const sway = this.reduced ? 0 : Math.sin(t * 0.45) * 0.22 * C.hero * C.free;
+      m.pivot.rotation.set(C.rotX + this.pointer.sy * 0.06 * C.free, C.rotY + sway + this.spinKick + this.pointer.sx * 0.18 * C.free, 0);
       const s = m.baseScale * C.zoom * L2.scale * (0.7 + 0.3 * C.gun);
       m.pivot.scale.setScalar(s);
       m.pivot.position.set(

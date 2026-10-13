@@ -339,6 +339,21 @@ main,
   padding: 90px var(--gutter);
 }
 
+/* the globe can be dragged; on touch only sideways, so vertical swipes keep scrolling */
+.step.is-globe {
+  touch-action: pan-y;
+}
+
+#story.is-grab .step.is-globe {
+  cursor: grab;
+}
+
+#story.is-dragging,
+#story.is-dragging .step.is-globe {
+  cursor: grabbing;
+  user-select: none;
+}
+
 .card {
   max-width: 440px;
   display: grid;

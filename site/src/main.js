@@ -36,6 +36,7 @@ weapons.forEach((w) => stage.register(builders[w.id](), w.parts));
 const sectionLabel = document.getElementById('section-label');
 const setSection = (t) => sectionLabel.textContent !== t && (sectionLabel.textContent = t);
 const storyRoot = document.getElementById('story');
+stage.globe.bindDrag(storyRoot);
 const HERO = { hero: true, explode: 0, rotY: 0.55, rotX: 0.12, zoom: 1, gun: 1, globe: 0 };
 
 let current = null;

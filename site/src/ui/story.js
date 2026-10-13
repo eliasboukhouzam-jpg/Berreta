@@ -92,7 +92,7 @@ export function buildSteps(w) {
       g.focus(firstMine.lat, firstMine.lon, 0.95);
     },
     html: `<span class="kicker">${j.title}</span><h3>From ${el.ore.toLowerCase()} to the ${part.name.toLowerCase()}.</h3>
-      <p>${el.why}</p><p class="small">Countries glow by their share of world output.</p>`,
+      <p>${el.why}</p><p class="small">Countries glow by their share of world output. Drag the globe to turn it.</p>`,
   });
 
   steps.push({

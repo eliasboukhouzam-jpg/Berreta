@@ -81,6 +81,8 @@ export class Globe {
     this.accent = new THREE.Color('#ff7a3d');
     this.ink = new THREE.Color('#f2ead8');
     this.target = { x: 0.35, y: 0, zoom: 1 };
+    this.vel = new THREE.Vector2(); // drag inertia in rad/s (x: tilt, y: spin)
+    this.dragging = false;
     this.journey = { stops: [], index: -1, arcs: [], progress: [] };
     this.buildBase();
     this.buildDots();
@@ -308,6 +310,64 @@ export class Globe {
     this.target.y = Math.PI / 2 - phi;
     this.target.x = (lat * Math.PI) / 180 * 0.85;
     this.target.zoom = zoom;
+    this.vel.set(0, 0);
+  }
+
+  /** The globe's circle on screen in CSS pixels, or null while it is not showing. */
+  screenCircle() {
+    if (this.presence < 0.5 || !this.camera) return null;
+    const c = new THREE.Vector3().setFromMatrixPosition(this.group.matrixWorld).project(this.camera);
+    const halfH = (this.camera.position.z - this.group.position.z) * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2));
+    return {
+      x: ((c.x + 1) / 2) * window.innerWidth,
+      y: ((1 - c.y) / 2) * window.innerHeight,
+      r: ((R * this.group.scale.x) / halfH) * (window.innerHeight / 2),
+    };
+  }
+
+  /**
+   * Drag the globe to turn it. The drag holds until the next scroll step, which turns the globe
+   * back to the place that step is about. On touch only sideways drags spin it, so vertical
+   * swipes still scroll the page.
+   */
+  bindDrag(root) {
+    let drag = null;
+    const over = (e) => {
+      const c = this.screenCircle();
+      return c && !e.target.closest('.card') && Math.hypot(e.clientX - c.x, e.clientY - c.y) < c.r * 1.05;
+    };
+    root.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0 || !over(e)) return;
+      if (e.pointerType === 'mouse') e.preventDefault();
+      drag = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now(), k: Math.PI / 2 / this.screenCircle().r, touch: e.pointerType !== 'mouse' };
+      this.dragging = true;
+      this.vel.set(0, 0);
+      root.classList.add('is-dragging');
+    });
+    window.addEventListener('pointermove', (e) => {
+      if (!drag) {
+        if (e.pointerType === 'mouse') root.classList.toggle('is-grab', Boolean(over(e)));
+        return;
+      }
+      if (e.pointerId !== drag.id) return;
+      const now = performance.now();
+      const dt = Math.max(8, now - drag.t) / 1000;
+      const spin = (e.clientX - drag.x) * drag.k;
+      const tilt = drag.touch ? 0 : (e.clientY - drag.y) * drag.k;
+      this.target.y += spin;
+      this.target.x = THREE.MathUtils.clamp(this.target.x + tilt, -1.3, 1.3);
+      this.vel.lerp(new THREE.Vector2(tilt / dt, spin / dt), 0.5);
+      Object.assign(drag, { x: e.clientX, y: e.clientY, t: now });
+    });
+    const end = (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      if (performance.now() - drag.t > 80) this.vel.set(0, 0); // held still before letting go: no fling
+      drag = null;
+      this.dragging = false;
+      root.classList.remove('is-dragging');
+    };
+    window.addEventListener('pointerup', end);
+    window.addEventListener('pointercancel', end);
   }
 
   update(dt, wanted, layout) {
@@ -321,9 +381,16 @@ export class Globe {
       return;
     }
     this.labelHost.dataset.globe = 'on';
+    if (!this.dragging && this.vel.lengthSq() > 1e-6) {
+      this.target.y += this.vel.y * dt;
+      this.target.x = THREE.MathUtils.clamp(this.target.x + this.vel.x * dt, -1.3, 1.3);
+      this.vel.multiplyScalar(Math.exp(-3.5 * dt));
+    }
+    // follows a drag tightly, eases slowly toward a scroll step's focus
+    const follow = this.dragging ? 18 : 2.6;
     const dy = wrap(this.target.y - this.spin.rotation.y);
-    this.spin.rotation.y += dy * (1 - Math.exp(-2.6 * dt));
-    this.spin.rotation.x = damp(this.spin.rotation.x, this.target.x, 2.6, dt);
+    this.spin.rotation.y += dy * (1 - Math.exp(-follow * dt));
+    this.spin.rotation.x = damp(this.spin.rotation.x, this.target.x, follow, dt);
     // on phones the card sits at the bottom, so the globe rides higher to stay clear of it
     const s = (layout.mobile ? 0.7 : 0.74) * layout.scale * this.target.zoom * (0.85 + 0.15 * p);
     this.group.scale.setScalar(damp(this.group.scale.x || s, s, 3, dt));
